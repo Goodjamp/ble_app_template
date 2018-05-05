@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<EmBitz_project_file>
+	<EmBitzVersion release="1.11" revision="0" />
+	<FileVersion major="1" minor="0" />
+	<Project>
+		<Option title="ble_app_template" />
+		<Option pch_mode="2" />
+		<Option compiler="armgcc_eb" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin\Debug\ble_app_template.elf" />
+				<Option object_output="obj\Debug\" />
+				<Option type="0" />
+				<Option compiler="armgcc_eb" />
+				<Option projectDeviceOptionsRelation="0" />
+				<Compiler>
+					<Add option="-g2" />
+					<Add option="-O0" />
+				</Compiler>
+				<Assembler>
+					<Add option="--gdwarf-2" />
+				</Assembler>
+			</Target>
+			<Target title="Release">
+				<Option output="bin\Release\ble_app_template.elf" />
+				<Option object_output="obj\Release\" />
+				<Option type="0" />
+				<Option compiler="armgcc_eb" />
+				<Option projectDeviceOptionsRelation="0" />
+				<Compiler>
+					<Add option="-O2" />
+					<Add option="-g2" />
+					<Add option="-fdata-sections" />
+					<Add option="-ffunction-sections" />
+				</Compiler>
+				<Linker>
+					<Add option="-Wl,--gc-sections" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\drivers_nrf\comp" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\drivers_nrf\twi_master" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\ble\ble_services\ble_ancs_c" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\ble\ble_services\ble_ancs_c" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\ble\ble_services\ble_ias_c" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\softdevice\s130\headers" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\libraries\pwm" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\libraries\usbd\class\cdc\acm" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\libraries\usbd\class\hid\generic" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\libraries\usbd\class\msc" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\libraries\usbd\class\hid" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\libraries\log" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\ble\ble_services\ble_gls" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\libraries\fstorage" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\drivers_nrf\i2s" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\libraries\gpiote" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\drivers_nrf\gpiote" />			
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\boards" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\drivers_nrf\common" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\ble\ble_advertising" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\drivers_nrf\adc" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\softdevice\s130\headers\nrf51" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\ble\ble_services\ble_bas_c" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\ble\ble_services\ble_hrs_c" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\libraries\queue" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\ble\ble_dtm" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\toolchain\cmsis\include" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\ble\ble_services\ble_rscs_c" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\drivers_nrf\uart" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\ble\common" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\ble\ble_services\ble_lls" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\drivers_nrf\wdt" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\libraries\bsp" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\ble\ble_services\ble_bas" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\libraries\experimental_section_vars" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\ble\ble_services\ble_ans_c" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\libraries\slip" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\libraries\mem_manager" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\external\segger_rtt" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\libraries\csense_drv" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\drivers_nrf\hal" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\ble\ble_services\ble_nus_c" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\drivers_nrf\rtc" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\ble\ble_services\ble_ias" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\libraries\usbd\class\hid\mouse" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\drivers_nrf\ppi" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\ble\ble_services\ble_dfu" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\drivers_nrf\twis_slave" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\libraries\scheduler" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\ble\ble_services\ble_lbs" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\ble\ble_services\ble_hts" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\drivers_nrf\delay" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\libraries\crc16" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\drivers_nrf\timer" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\libraries\util" />
+			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\drivers_nrf\pwm" />		
+		</Compiler>
+		<Unit filename="..\main.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\ble\ble_advertising\ble_advertising.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\ble\common\ble_advdata.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\ble\common\ble_conn_params.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\ble\common\ble_conn_state.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\ble\common\ble_srv_common.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\ble\peer_manager\gatt_cache_manager.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\ble\peer_manager\gatts_cache_manager.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\ble\peer_manager\id_manager.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\ble\peer_manager\peer_data.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\ble\peer_manager\peer_data_storage.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\ble\peer_manager\peer_database.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\ble\peer_manager\peer_id.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\ble\peer_manager\peer_manager.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\ble\peer_manager\pm_buffer.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\ble\peer_manager\pm_mutex.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\ble\peer_manager\security_dispatcher.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\ble\peer_manager\security_manager.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\boards\boards.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\drivers_nrf\clock\nrf_drv_clock.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\drivers_nrf\common\nrf_drv_common.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\drivers_nrf\gpiote\nrf_drv_gpiote.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\drivers_nrf\uart\nrf_drv_uart.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\libraries\bsp\bsp.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\libraries\bsp\bsp_btn_ble.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\libraries\bsp\bsp_nfc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\libraries\button\app_button.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\libraries\crc16\crc16.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\libraries\fds\fds.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\libraries\fstorage\fstorage.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\libraries\hardfault\hardfault_implementation.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\libraries\log\src\nrf_log_backend_serial.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\libraries\log\src\nrf_log_frontend.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\libraries\sensorsim\sensorsim.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\libraries\timer\app_timer.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\libraries\util\app_error.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\libraries\util\app_error_weak.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\libraries\util\app_util_platform.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\libraries\util\nrf_assert.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\libraries\util\sdk_errors.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\libraries\util\sdk_mapped_flags.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\softdevice\common\softdevice_handler\softdevice_handler.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\toolchain\gcc\gcc_startup_nrf51.S">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\toolchain\system_nrf51.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\external\segger_rtt\RTT_Syscalls_GCC.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\external\segger_rtt\SEGGER_RTT.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\external\segger_rtt\SEGGER_RTT_printf.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Extensions>
+			<code_completion />
+			<debugger />
+			<envvars />
+		</Extensions>
+	</Project>
+</EmBitz_project_file>
