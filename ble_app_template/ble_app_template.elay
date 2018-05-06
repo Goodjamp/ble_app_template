@@ -1,4 +1,24 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <EmBitz_layout_file>
 	<ActiveTarget name="Debug" />
+	<File name="..\main.c" open="1" top="0" tabpos="8" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="28075" topLine="780" />
+		</Cursor>
+	</File>
+	<File name="..\nRF5_SDK_12.3.0_d7731ad\components\ble\common\ble_conn_params.c" open="1" top="0" tabpos="14" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2193" topLine="26" />
+		</Cursor>
+	</File>
+	<File name="..\nRF5_SDK_12.3.0_d7731ad\components\toolchain\gcc\gcc_startup_nrf51.S" open="1" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="4933" topLine="166" />
+		</Cursor>
+	</File>
+	<File name="..\pca10028\s130\armgcc\ble_app_template_gcc_nrf51.ld" open="1" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="280" topLine="0" />
+		</Cursor>
+	</File>
 </EmBitz_layout_file>
