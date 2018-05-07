@@ -279,6 +279,9 @@
 		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\libraries\log\src\nrf_log_frontend.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\libraries\scheduler\app_scheduler.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\libraries\sensorsim\sensorsim.c">
 			<Option compilerVar="CC" />
 		</Unit>

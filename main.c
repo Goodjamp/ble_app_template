@@ -98,8 +98,8 @@
 
 #define DEVICE_NAME                     "Gerasimchuk_Template"                           /**< Name of device. Will be included in the advertising data. */
 #define MANUFACTURER_NAME               "NordicSemiconductor"                       /**< Manufacturer. Will be passed to Device Information Service. */
-#define APP_ADV_INTERVAL                300                                         /**< The advertising interval (in units of 0.625 ms. This value corresponds to 187.5 ms). */
-#define APP_ADV_TIMEOUT_IN_SECONDS      20                                         /**< The advertising timeout in units of seconds. */
+#define APP_ADV_INTERVAL                50                                         /**< The advertising interval (in units of 0.625 ms. This value corresponds to 187.5 ms). */
+#define APP_ADV_TIMEOUT_IN_SECONDS      2000                                         /**< The advertising timeout in units of seconds. */
 
 #define APP_TIMER_PRESCALER             0                                           /**< Value of the RTC1 PRESCALER register. */
 #define APP_TIMER_OP_QUEUE_SIZE         4                                           /**< Size of timer operation queues. */
@@ -784,13 +784,14 @@ static void buttons_leds_init(bool * p_erase_bonds)
 
 /**@brief Function for the Power manager.
  */
+ /*
 static void power_manage(void)
 {
     uint32_t err_code = sd_app_evt_wait();
 
     APP_ERROR_CHECK(err_code);
 }
-
+*/
 
 /**@brief Function for starting advertising.
  */
@@ -799,6 +800,36 @@ static void advertising_start(void)
     uint32_t err_code = ble_advertising_start(BLE_ADV_MODE_FAST);
 
     APP_ERROR_CHECK(err_code);
+}
+
+#include "nrf_timer.h"
+#include "nrf_gpio.h"
+#include "app_scheduler.h"
+
+#define LED_CONTROL_PIN  (uint32_t)4
+#define CONTROL_PIN      (uint32_t)3
+
+
+void gpioInit(void)
+{
+    nrf_gpio_cfg_output(LED_CONTROL_PIN);
+    nrf_gpio_cfg_output(CONTROL_PIN);
+    nrf_timer_mode_get()
+
+
+    NVIC_EnableIRQ(TIMER0_IRQ_IRQn);
+}
+
+
+void TIMER0_IRQHandler(void)
+{
+    nrf_gpio_pin_toggle(CONTROL_PIN);
+    while( (cntIn++) < 200000)
+    {
+        return;
+    }
+    cntIn = 0;
+    nrf_gpio_pin_toggle(LED_CONTROL_PIN);
 }
 
 
@@ -814,6 +845,7 @@ int main(void)
     APP_ERROR_CHECK(err_code);
 
     timers_init();
+    gpioInit();
     buttons_leds_init(&erase_bonds);
     ble_stack_init();
     peer_manager_init(erase_bonds);
@@ -835,10 +867,12 @@ int main(void)
     // Enter main loop.
     for (;;)
     {
+        blinkComtrol();
         if (NRF_LOG_PROCESS() == false)
         {
-            power_manage();
+            //power_manage();
         }
+
     }
 }
 
