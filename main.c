@@ -802,33 +802,65 @@ static void advertising_start(void)
     APP_ERROR_CHECK(err_code);
 }
 
+#include "nrf51.h"
 #include "nrf_timer.h"
 #include "nrf_gpio.h"
 #include "app_scheduler.h"
 
+
 #define LED_CONTROL_PIN  (uint32_t)4
 #define CONTROL_PIN      (uint32_t)3
+#define MES_PERIOD_MS          200
+
+const uint32_t timFrqList[]=
+{
+    [NRF_TIMER_FREQ_16MHz]    = 16000000, ///< Timer frequency 16 MHz.
+    [NRF_TIMER_FREQ_8MHz]     = 8000000,  ///< Timer frequency 8 MHz.
+    [NRF_TIMER_FREQ_4MHz]     = 4000000,  ///< Timer frequency 4 MHz.
+    [NRF_TIMER_FREQ_2MHz]     = 2000000,  ///< Timer frequency 2 MHz.
+    [NRF_TIMER_FREQ_1MHz]     = 1000000,  ///< Timer frequency 1 MHz.
+    [NRF_TIMER_FREQ_500kHz]   = 500000,   ///< Timer frequency 500 kHz.
+    [NRF_TIMER_FREQ_250kHz]   = 250000,   ///< Timer frequency 250 kHz.
+    [NRF_TIMER_FREQ_125kHz]   = 125000,   ///< Timer frequency 125 kHz.
+    [NRF_TIMER_FREQ_62500Hz]  = 62500,    ///< Timer frequency 62500 Hz.
+    [NRF_TIMER_FREQ_31250Hz]  = 31250     ///< Timer frequency 31250 Hz.
+};
+
+
+void timerInit(void)
+{
+    /*-------------Config timer for interrupt in CC---------*/
+    uint32_t valCC = (timFrqList[NRF_TIMER_FREQ_16MHz] / 1000) * 200;
+    nrf_timer_mode_set(NRF_TIMER0, NRF_TIMER_MODE_TIMER);
+    nrf_timer_bit_width_set(NRF_TIMER0, NRF_TIMER_BIT_WIDTH_32);
+    nrf_timer_frequency_set(NRF_TIMER0, NRF_TIMER_FREQ_16MHz);
+    nrf_timer_cc_write(NRF_TIMER0, NRF_TIMER_CC_CHANNEL0, valCC);
+
+    NVIC_EnableIRQ(TIMER0_IRQn);
+
+    nrf_timer_task_trigger(NRF_TIMER0, NRF_TIMER_TASK_START);
+}
+
 
 
 void gpioInit(void)
 {
     nrf_gpio_cfg_output(LED_CONTROL_PIN);
     nrf_gpio_cfg_output(CONTROL_PIN);
-    nrf_timer_mode_get()
-
-
-    NVIC_EnableIRQ(TIMER0_IRQ_IRQn);
 }
 
 
 void TIMER0_IRQHandler(void)
 {
+    nrf_timer_task_trigger(NRF_TIMER0, NRF_TIMER_TASK_CLEAR);
+/*
     nrf_gpio_pin_toggle(CONTROL_PIN);
     while( (cntIn++) < 200000)
     {
         return;
     }
     cntIn = 0;
+    */
     nrf_gpio_pin_toggle(LED_CONTROL_PIN);
 }
 
@@ -846,6 +878,7 @@ int main(void)
 
     timers_init();
     gpioInit();
+    timerInit();
     buttons_leds_init(&erase_bonds);
     ble_stack_init();
     peer_manager_init(erase_bonds);
@@ -867,7 +900,7 @@ int main(void)
     // Enter main loop.
     for (;;)
     {
-        blinkComtrol();
+        //blinkComtrol();
         if (NRF_LOG_PROCESS() == false)
         {
             //power_manage();
