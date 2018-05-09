@@ -8,6 +8,7 @@
 *.log
 *.ebTemp
 *_build_log.html
+*.depend
 
 release
 debug
