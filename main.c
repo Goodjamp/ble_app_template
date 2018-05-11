@@ -98,8 +98,8 @@
 
 #define DEVICE_NAME                     "Gerasimchuk_Template"                           /**< Name of device. Will be included in the advertising data. */
 #define MANUFACTURER_NAME               "NordicSemiconductor"                       /**< Manufacturer. Will be passed to Device Information Service. */
-#define APP_ADV_INTERVAL                50                                         /**< The advertising interval (in units of 0.625 ms. This value corresponds to 187.5 ms). */
-#define APP_ADV_TIMEOUT_IN_SECONDS      2000                                         /**< The advertising timeout in units of seconds. */
+#define APP_ADV_INTERVAL                180                                         /**< The advertising interval (in units of 0.625 ms. This value corresponds to 187.5 ms). */
+#define APP_ADV_TIMEOUT_IN_SECONDS      200                                         /**< The advertising timeout in units of seconds. */
 
 #define APP_TIMER_PRESCALER             0                                           /**< Value of the RTC1 PRESCALER register. */
 #define APP_TIMER_OP_QUEUE_SIZE         4                                           /**< Size of timer operation queues. */
@@ -133,6 +133,30 @@ static uint16_t m_conn_handle = BLE_CONN_HANDLE_INVALID;                        
 
 // YOUR_JOB: Use UUIDs for service(s) used in your application.
 static ble_uuid_t m_adv_uuids[] = {{BLE_UUID_DEVICE_INFORMATION_SERVICE, BLE_UUID_TYPE_BLE}}; /**< Universally unique service identifiers. */
+
+
+#define GET_PAGE_ADDRESS(X)  (uint32_t)(X*1024)
+#define LED_CONTROL_PIN      (uint32_t)4
+#define CONTROL_PIN          (uint32_t)3
+#define MES_PERIOD_MS         200
+#define MY_TIM                NRF_TIMER1
+#define TIMER_INT_MS          500
+#define UPDATE_NAME_S         2
+#define CONFIG_PAGE           255
+
+
+#pragma pack(push,1)
+typedef struct
+{
+    uint8_t deviceName[50];
+    uint8_t saveData[10];
+}configurationS_t;
+#pragma pack(pop)
+
+const uint8_t defName[] = "Gerasimchuk_0   ";
+configurationS_t configUpdate;
+configurationS_t const *configFlash = (configurationS_t*)GET_PAGE_ADDRESS(CONFIG_PAGE);
+
 
 static void advertising_start(void);
 
@@ -289,9 +313,19 @@ static void gap_params_init(void)
 
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&sec_mode);
 
-    err_code = sd_ble_gap_device_name_set(&sec_mode,
-                                          (const uint8_t *)DEVICE_NAME,
-                                          strlen(DEVICE_NAME));
+    if( memcmp(configFlash->deviceName, defName, 11) != 0 )
+    {
+            err_code = sd_ble_gap_device_name_set(&sec_mode,
+                                          (const uint8_t *)defName,
+                                          strlen((char*)defName));
+    }
+    else
+    {
+         err_code = sd_ble_gap_device_name_set(&sec_mode,
+                                          (const uint8_t *)configFlash->deviceName,
+                                          strlen((char*)configFlash->deviceName));
+    }
+
     APP_ERROR_CHECK(err_code);
 
     /* YOUR_JOB: Use an appearance value matching the application's use case.
@@ -805,12 +839,16 @@ static void advertising_start(void)
 #include "nrf51.h"
 #include "nrf_timer.h"
 #include "nrf_gpio.h"
-#include "app_scheduler.h"
+#include "nrf_nvmc.h"
+
+#include "string.h"
 
 
-#define LED_CONTROL_PIN  (uint32_t)4
-#define CONTROL_PIN      (uint32_t)3
-#define MES_PERIOD_MS          200
+
+
+
+
+
 
 const uint32_t timFrqList[]=
 {
@@ -830,15 +868,16 @@ const uint32_t timFrqList[]=
 void timerInit(void)
 {
     /*-------------Config timer for interrupt in CC---------*/
-    uint32_t valCC = (timFrqList[NRF_TIMER_FREQ_16MHz] / 1000) * 200;
-    nrf_timer_mode_set(NRF_TIMER0, NRF_TIMER_MODE_TIMER);
-    nrf_timer_bit_width_set(NRF_TIMER0, NRF_TIMER_BIT_WIDTH_32);
-    nrf_timer_frequency_set(NRF_TIMER0, NRF_TIMER_FREQ_16MHz);
-    nrf_timer_cc_write(NRF_TIMER0, NRF_TIMER_CC_CHANNEL0, valCC);
+    uint32_t valCC = (timFrqList[NRF_TIMER_FREQ_250kHz] / 1000) * TIMER_INT_MS;
+    nrf_timer_mode_set(MY_TIM, NRF_TIMER_MODE_TIMER);
+    nrf_timer_bit_width_set(MY_TIM, NRF_TIMER_BIT_WIDTH_16);
+    nrf_timer_frequency_set(MY_TIM, NRF_TIMER_FREQ_250kHz);
+    nrf_timer_cc_write(MY_TIM, NRF_TIMER_CC_CHANNEL0, valCC);
+    nrf_timer_int_enable(MY_TIM, (0b1 << 16));
 
-    NVIC_EnableIRQ(TIMER0_IRQn);
+    NVIC_EnableIRQ(TIMER1_IRQn);
 
-    nrf_timer_task_trigger(NRF_TIMER0, NRF_TIMER_TASK_START);
+    nrf_timer_task_trigger(MY_TIM, NRF_TIMER_TASK_START);
 }
 
 
@@ -850,17 +889,32 @@ void gpioInit(void)
 }
 
 
-void TIMER0_IRQHandler(void)
+
+
+
+
+void TIMER1_IRQHandler(void)
 {
-    nrf_timer_task_trigger(NRF_TIMER0, NRF_TIMER_TASK_CLEAR);
-/*
-    nrf_gpio_pin_toggle(CONTROL_PIN);
-    while( (cntIn++) < 200000)
+    static uint16_t intCounter = 0;
+    if( intCounter++ > (UPDATE_NAME_S*1000/TIMER_INT_MS) )
     {
-        return;
+        if(memcmp(defName, configFlash->deviceName, 11 ) != 0)
+        {
+            memcpy(configUpdate.deviceName, defName, sizeof(defName));
+        }
+        else
+        {
+            memcpy(configUpdate.deviceName, configFlash->deviceName, sizeof(defName));
+        }
+        configUpdate.deviceName[12]++;
+        nrf_nvmc_page_erase(GET_PAGE_ADDRESS(CONFIG_PAGE));
+        nrf_nvmc_write_bytes(GET_PAGE_ADDRESS(CONFIG_PAGE), (uint8_t*)&configUpdate, sizeof(configurationS_t));
+
+        NVIC_SystemReset();
     }
-    cntIn = 0;
-    */
+    nrf_timer_task_trigger(MY_TIM, NRF_TIMER_TASK_CLEAR);
+    nrf_timer_event_clear(MY_TIM, NRF_TIMER_EVENT_COMPARE0);
+
     nrf_gpio_pin_toggle(LED_CONTROL_PIN);
 }
 
@@ -877,8 +931,7 @@ int main(void)
     APP_ERROR_CHECK(err_code);
 
     timers_init();
-    gpioInit();
-    timerInit();
+
     buttons_leds_init(&erase_bonds);
     ble_stack_init();
     peer_manager_init(erase_bonds);
@@ -897,6 +950,8 @@ int main(void)
     err_code = ble_advertising_start(BLE_ADV_MODE_FAST);
     APP_ERROR_CHECK(err_code);
 
+    gpioInit();
+    timerInit();
     // Enter main loop.
     for (;;)
     {

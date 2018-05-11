@@ -246,6 +246,9 @@
 		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\drivers_nrf\gpiote\nrf_drv_gpiote.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\drivers_nrf\hal\nrf_nvmc.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\drivers_nrf\uart\nrf_drv_uart.c">
 			<Option compilerVar="CC" />
 		</Unit>
