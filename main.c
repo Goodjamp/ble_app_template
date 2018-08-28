@@ -132,7 +132,7 @@ static uint16_t m_conn_handle = BLE_CONN_HANDLE_INVALID;                        
  */
 
 // YOUR_JOB: Use UUIDs for service(s) used in your application.
-static ble_uuid_t m_adv_uuids[] = {{BLE_UUID_DEVICE_INFORMATION_SERVICE, BLE_UUID_TYPE_BLE}}; /**< Universally unique service identifiers. */
+static ble_uuid_t m_adv_uuids[] = {{BLE_UUID_HUMAN_INTERFACE_DEVICE_SERVICE, BLE_UUID_TYPE_BLE}}; /**< Universally unique service identifiers. */
 
 
 #define GET_PAGE_ADDRESS(X)  (uint32_t)(X*1024)
@@ -141,7 +141,7 @@ static ble_uuid_t m_adv_uuids[] = {{BLE_UUID_DEVICE_INFORMATION_SERVICE, BLE_UUI
 #define MES_PERIOD_MS         200
 #define MY_TIM                NRF_TIMER1
 #define TIMER_INT_MS          500
-#define UPDATE_NAME_S         2
+#define UPDATE_NAME_S         6
 #define CONFIG_PAGE           255
 
 
@@ -654,7 +654,10 @@ static void ble_stack_init(void)
 {
     uint32_t err_code;
 
-    nrf_clock_lf_cfg_t clock_lf_cfg = NRF_CLOCK_LFCLKSRC;
+    nrf_clock_lf_cfg_t clock_lf_cfg = {.source        = NRF_CLOCK_LF_SRC_SYNTH,
+                                       .rc_ctiv       = 0,
+                                       .rc_temp_ctiv  = 0,
+                                       .xtal_accuracy = NRF_CLOCK_LF_XTAL_ACCURACY_20_PPM};
 
     // Initialize the SoftDevice handler module.
     SOFTDEVICE_HANDLER_INIT(&clock_lf_cfg, NULL);
@@ -889,13 +892,14 @@ void gpioInit(void)
 }
 
 
-
+const uint8_t mat[] = "FACK YOU!!";
 
 
 
 void TIMER1_IRQHandler(void)
 {
     static uint16_t intCounter = 0;
+    uint8_t wordCnt = configFlash->saveData[0];
     if( intCounter++ > (UPDATE_NAME_S*1000/TIMER_INT_MS) )
     {
         if(memcmp(defName, configFlash->deviceName, 11 ) != 0)
@@ -906,7 +910,14 @@ void TIMER1_IRQHandler(void)
         {
             memcpy(configUpdate.deviceName, configFlash->deviceName, sizeof(defName));
         }
-        configUpdate.deviceName[12]++;
+
+        if ( ++wordCnt >= sizeof(mat))
+        {
+            wordCnt = 0;
+        }
+
+        configUpdate.saveData[0] = wordCnt;
+        configUpdate.deviceName[12] = mat[wordCnt];
         nrf_nvmc_page_erase(GET_PAGE_ADDRESS(CONFIG_PAGE));
         nrf_nvmc_write_bytes(GET_PAGE_ADDRESS(CONFIG_PAGE), (uint8_t*)&configUpdate, sizeof(configurationS_t));
 
@@ -925,6 +936,7 @@ int main(void)
 {
     uint32_t err_code;
     bool     erase_bonds;
+
 
     // Initialize.
     err_code = NRF_LOG_INIT(NULL);
