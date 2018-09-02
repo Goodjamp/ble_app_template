@@ -180,6 +180,16 @@
 			<Add directory="..\pca10028\s130\armgcc" />
 			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\toolchain\gcc" />
 		</Linker>
+		<Unit filename="..\BME280_HAL\BME280_source.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\BME280_HAL\BME280_source.h" />
+		<Unit filename="..\BME280_HAL\BME280_user_interface.h" />
+		<Unit filename="..\bme280Interface.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\bme280Interface.h" />
+		<Unit filename="..\i2cHAL.h" />
 		<Unit filename="..\main.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -249,6 +259,10 @@
 		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\drivers_nrf\hal\nrf_nvmc.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\drivers_nrf\twi_master\nrf_drv_twi.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\drivers_nrf\twi_master\nrf_drv_twi.h" />
 		<Unit filename="..\nRF5_SDK_12.3.0_d7731ad\components\drivers_nrf\uart\nrf_drv_uart.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -332,7 +346,7 @@
 			<code_completion />
 			<debugger>
 				<target_debugging_settings target="Debug" active_interface="J-link">
-					<debug_interface interface_id="J-link" ip_address="localhost" ip_port="2331" path="%Software\SEGGER\J-Link:InstallPath%" executable="JLinkGDBServer.exe" description="" dont_start_server="false" backoff_time="2000" options="0" reg_filter="0" active_family="Nordic" gdb_before_conn="" gdb_after_conn="">
+					<debug_interface interface_id="J-link" ip_address="localhost" ip_port="2331" path="%Software\SEGGER\J-Link:InstallPath%" executable="JLinkGDBServer.exe" description="..\nRF5_SDK_12.3.0_d7731ad\svd\nrf51.svd" dont_start_server="false" backoff_time="2000" options="0" reg_filter="0" active_family="Nordic" gdb_before_conn="" gdb_after_conn="">
 						<family_options family_id="NXP" />
 						<family_options family_id="Nordic">
 							<option opt_id="ID_DEVICE" opt_value="nRF51822_xxAC" />

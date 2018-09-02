@@ -55,7 +55,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
-#include <stdio.h>
 
 #include "nordic_common.h"
 #include "nrf.h"
@@ -85,7 +84,6 @@
 #define NRF_LOG_MODULE_NAME "APP"
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
-#include "nrf_drv_twi.h"
 
 #define IS_SRVC_CHANGED_CHARACT_PRESENT 1                                           /**< Include or not the service_changed characteristic. if not enabled, the server's database cannot be changed for the lifetime of the device*/
 
@@ -100,8 +98,8 @@
 
 #define DEVICE_NAME                     "Gerasimchuk_Template"                           /**< Name of device. Will be included in the advertising data. */
 #define MANUFACTURER_NAME               "NordicSemiconductor"                       /**< Manufacturer. Will be passed to Device Information Service. */
-#define APP_ADV_INTERVAL                180                                         /**< The advertising interval (in units of 0.625 ms. This value corresponds to 187.5 ms). */
-#define APP_ADV_TIMEOUT_IN_SECONDS      200                                         /**< The advertising timeout in units of seconds. */
+#define APP_ADV_INTERVAL                300                                         /**< The advertising interval (in units of 0.625 ms. This value corresponds to 187.5 ms). */
+#define APP_ADV_TIMEOUT_IN_SECONDS      20                                         /**< The advertising timeout in units of seconds. */
 
 #define APP_TIMER_PRESCALER             0                                           /**< Value of the RTC1 PRESCALER register. */
 #define APP_TIMER_OP_QUEUE_SIZE         4                                           /**< Size of timer operation queues. */
@@ -134,30 +132,7 @@ static uint16_t m_conn_handle = BLE_CONN_HANDLE_INVALID;                        
  */
 
 // YOUR_JOB: Use UUIDs for service(s) used in your application.
-static ble_uuid_t m_adv_uuids[] = {{BLE_UUID_HUMAN_INTERFACE_DEVICE_SERVICE, BLE_UUID_TYPE_BLE}}; /**< Universally unique service identifiers. */
-
-
-#define GET_PAGE_ADDRESS(X)  (uint32_t)(X*1024)
-#define LED_CONTROL_PIN      (uint32_t)4
-#define CONTROL_PIN          (uint32_t)3
-#define MES_PERIOD_MS         200
-
-#define UPDATE_NAME_S           6
-#define CONFIG_PAGE             255
-#define UPDATE_NAME_INTERVAL_MS 100
-
-
-#pragma pack(push,1)
-typedef struct
-{
-    uint8_t deviceName[50];
-    uint8_t saveData[10];
-}configurationS_t;
-#pragma pack(pop)
-
-const uint8_t defName[] = "DEVEX T =";
-configurationS_t const *configFlash = (configurationS_t*)GET_PAGE_ADDRESS(CONFIG_PAGE);
-
+static ble_uuid_t m_adv_uuids[] = {{BLE_UUID_DEVICE_INFORMATION_SERVICE, BLE_UUID_TYPE_BLE}}; /**< Universally unique service identifiers. */
 
 static void advertising_start(void);
 
@@ -314,19 +289,9 @@ static void gap_params_init(void)
 
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&sec_mode);
 
-    if( memcmp(configFlash->deviceName, defName, sizeof(defName) - 1 ) != 0 )
-    {
-            err_code = sd_ble_gap_device_name_set(&sec_mode,
-                                          (const uint8_t *)defName,
-                                          strlen((char*)defName));
-    }
-    else
-    {
-         err_code = sd_ble_gap_device_name_set(&sec_mode,
-                                          (const uint8_t *)configFlash->deviceName,
-                                          strlen((char*)configFlash->deviceName));
-    }
-
+    err_code = sd_ble_gap_device_name_set(&sec_mode,
+                                          (const uint8_t *)DEVICE_NAME,
+                                          strlen(DEVICE_NAME));
     APP_ERROR_CHECK(err_code);
 
     /* YOUR_JOB: Use an appearance value matching the application's use case.
@@ -655,10 +620,7 @@ static void ble_stack_init(void)
 {
     uint32_t err_code;
 
-    nrf_clock_lf_cfg_t clock_lf_cfg = {.source        = NRF_CLOCK_LF_SRC_SYNTH,
-                                       .rc_ctiv       = 0,
-                                       .rc_temp_ctiv  = 0,
-                                       .xtal_accuracy = NRF_CLOCK_LF_XTAL_ACCURACY_20_PPM};
+    nrf_clock_lf_cfg_t clock_lf_cfg = NRF_CLOCK_LFCLKSRC;
 
     // Initialize the SoftDevice handler module.
     SOFTDEVICE_HANDLER_INIT(&clock_lf_cfg, NULL);
@@ -840,90 +802,66 @@ static void advertising_start(void)
     APP_ERROR_CHECK(err_code);
 }
 
-#include "bme280Interface.h"
-#include "BME280_user_interface.h"
+#include "nrf51.h"
+#include "nrf_timer.h"
+#include "nrf_gpio.h"
+#include "app_scheduler.h"
 
-BME280Handler sensorHandler;
 
-BME280_STATUS initI2C_Sensor(void){
-	BME280_STATUS bmeStatus;
-	bool sensorIsOnLine = false;
+#define LED_CONTROL_PIN  (uint32_t)4
+#define CONTROL_PIN      (uint32_t)3
+#define MES_PERIOD_MS          200
 
-	bme280InterfaceInit();
+const uint32_t timFrqList[]=
+{
+    [NRF_TIMER_FREQ_16MHz]    = 16000000, ///< Timer frequency 16 MHz.
+    [NRF_TIMER_FREQ_8MHz]     = 8000000,  ///< Timer frequency 8 MHz.
+    [NRF_TIMER_FREQ_4MHz]     = 4000000,  ///< Timer frequency 4 MHz.
+    [NRF_TIMER_FREQ_2MHz]     = 2000000,  ///< Timer frequency 2 MHz.
+    [NRF_TIMER_FREQ_1MHz]     = 1000000,  ///< Timer frequency 1 MHz.
+    [NRF_TIMER_FREQ_500kHz]   = 500000,   ///< Timer frequency 500 kHz.
+    [NRF_TIMER_FREQ_250kHz]   = 250000,   ///< Timer frequency 250 kHz.
+    [NRF_TIMER_FREQ_125kHz]   = 125000,   ///< Timer frequency 125 kHz.
+    [NRF_TIMER_FREQ_62500Hz]  = 62500,    ///< Timer frequency 62500 Hz.
+    [NRF_TIMER_FREQ_31250Hz]  = 31250     ///< Timer frequency 31250 Hz.
+};
 
-	BME280_setI2CAddress(&sensorHandler, BME280_ADDRESS_LOW);
-    // Is sensor online ?
-	if(BME280_STATUS_OK  != (bmeStatus = BME280_isOnLine(&sensorHandler, &sensorIsOnLine) ) ){
-        return bmeStatus;
-	}
-	if( !sensorIsOnLine ){
-		return BME280_STATUS_SENSOR_ERROR;
-	}
 
-	if(BME280_STATUS_OK  != (bmeStatus = BME280_init(&sensorHandler) ) )
-	{
-		return bmeStatus;
-	}
-	// Enable measurement all value with 16 oversemple
-	if(BME280_STATUS_OK  != (bmeStatus = BME280_setValueMesState(&sensorHandler, MES_VALUE_TEMPERATURE, MES_STATE_ENABLE) ) )
-	{
-		return bmeStatus;
-	}
-	if(BME280_STATUS_OK  != (bmeStatus = BME280_setOverSample(&sensorHandler, MES_VALUE_HUMIDITY, OVERSEMPLE_16) ) )
-	{
-		return bmeStatus;
-	}
-	if(BME280_STATUS_OK  != (bmeStatus = BME280_setValueMesState(&sensorHandler, MES_VALUE_PRESSURE, MES_STATE_ENABLE) ) )
-	{
-		return bmeStatus;
-	}
-	if(BME280_STATUS_OK  != (bmeStatus = BME280_setOverSample(&sensorHandler, MES_VALUE_HUMIDITY, OVERSEMPLE_16) ) )
-	{
-		return bmeStatus;
-	}
-	if(BME280_STATUS_OK  != (bmeStatus = BME280_setValueMesState(&sensorHandler, MES_VALUE_HUMIDITY, MES_STATE_ENABLE) ) )
-	{
-		return bmeStatus;
-	}
-	if(BME280_STATUS_OK  != (bmeStatus = BME280_setOverSample(&sensorHandler, MES_VALUE_HUMIDITY, OVERSEMPLE_16) ) )
-	{
-		return bmeStatus;
-	}
-    // set delay between measurement equal 65 ms
-	if(BME280_STATUS_OK  != (bmeStatus = BME280_setMesDelay(&sensorHandler, MEASUREMENT_DELAY_65_5ms) ) )
-	{
-		return bmeStatus;
-	}
-	return BME280_STATUS_OK;
+void timerInit(void)
+{
+    /*-------------Config timer for interrupt in CC---------*/
+    uint32_t valCC = (timFrqList[NRF_TIMER_FREQ_16MHz] / 1000) * 200;
+    nrf_timer_mode_set(NRF_TIMER1, NRF_TIMER_MODE_TIMER);
+    nrf_timer_bit_width_set(NRF_TIMER1, NRF_TIMER_BIT_WIDTH_32);
+    nrf_timer_frequency_set(NRF_TIMER1, NRF_TIMER_FREQ_16MHz);
+    nrf_timer_cc_write(NRF_TIMER1, NRF_TIMER_CC_CHANNEL0, valCC);
+
+    NVIC_EnableIRQ(TIMER1_IRQn);
+
+    nrf_timer_task_trigger(NRF_TIMER1, NRF_TIMER_TASK_START);
 }
 
 
-#include "nrf_nvmc.h"
-void updateDeviceName(void)
-{
-    BME280_STATUS bmeStatus;
-    int16_t       rezTIntPart;
-    int16_t       rezTFloatPart;
-    float         rezMesHumidity;
-	float         rezMesTemperature;
-	float         rezMesPressure;
-	uint8_t       devName[] = "DEVEX T = -25.5 C";
 
-	if(BME280_STATUS_OK  != (bmeStatus = BME280_forcedMes(&sensorHandler, &rezMesTemperature,
-                                                                          &rezMesPressure,
-					                                                      &rezMesHumidity)))
+void gpioInit(void)
+{
+    nrf_gpio_cfg_output(LED_CONTROL_PIN);
+    nrf_gpio_cfg_output(CONTROL_PIN);
+}
+
+
+void TIMER1_IRQHandler(void)
+{
+    nrf_timer_task_trigger(NRF_TIMER1, NRF_TIMER_TASK_CLEAR);
+/*
+    nrf_gpio_pin_toggle(CONTROL_PIN);
+    while( (cntIn++) < 200000)
     {
         return;
     }
-    rezTIntPart   = rezMesTemperature;
-    rezTFloatPart = (((rezMesTemperature >= 0) ? (rezMesTemperature) : ((-1 * rezMesTemperature))) - ((rezTIntPart >= 0) ? (rezTIntPart) : ((-1 * rezTIntPart)))) * 10;
-    sprintf((char*)(&devName), "DEVEX T = %2d.%1d C", (rezTIntPart < 100 && rezTIntPart > -100  ) ? (rezTIntPart) : (-99), rezTFloatPart);
-    //configUpdate.saveData[0] = wordCnt;
-    //configUpdate.deviceName[12] = mat[wordCnt];
-    nrf_nvmc_page_erase(GET_PAGE_ADDRESS(CONFIG_PAGE));
-    nrf_nvmc_write_bytes(GET_PAGE_ADDRESS(CONFIG_PAGE), devName, sizeof(devName));
-
-    NVIC_SystemReset();
+    cntIn = 0;
+    */
+    nrf_gpio_pin_toggle(LED_CONTROL_PIN);
 }
 
 
@@ -933,17 +871,14 @@ int main(void)
 {
     uint32_t err_code;
     bool     erase_bonds;
-    uint32_t updateNameCnt = UPDATE_NAME_INTERVAL_MS;
-
-    timerInit();
-    initI2C_Sensor();
 
     // Initialize.
     err_code = NRF_LOG_INIT(NULL);
     APP_ERROR_CHECK(err_code);
 
     timers_init();
-
+    //gpioInit();
+    //timerInit();
     buttons_leds_init(&erase_bonds);
     ble_stack_init();
     peer_manager_init(erase_bonds);
@@ -965,13 +900,6 @@ int main(void)
     // Enter main loop.
     for (;;)
     {
-
-        if(getSysTime() >= updateNameCnt)
-        {
-            updateDeviceName();
-            updateNameCnt = getSysTime() + UPDATE_NAME_INTERVAL_MS;
-        }
-
         //blinkComtrol();
         if (NRF_LOG_PROCESS() == false)
         {
