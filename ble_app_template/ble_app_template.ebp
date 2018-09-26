@@ -180,6 +180,10 @@
 			<Add directory="..\pca10028\s130\armgcc" />
 			<Add directory="..\nRF5_SDK_12.3.0_d7731ad\components\toolchain\gcc" />
 		</Linker>
+		<Unit filename="..\addServCharacter.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\addServCharacter.h" />
 		<Unit filename="..\BME280_HAL\BME280_source.c">
 			<Option compilerVar="CC" />
 		</Unit>

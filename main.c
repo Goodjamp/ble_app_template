@@ -87,6 +87,8 @@
 #include "nrf_log_ctrl.h"
 #include "nrf_drv_twi.h"
 
+#include "addServCharacter.h"
+
 #define IS_SRVC_CHANGED_CHARACT_PRESENT 1                                           /**< Include or not the service_changed characteristic. if not enabled, the server's database cannot be changed for the lifetime of the device*/
 
 #if (NRF_SD_BLE_API_VERSION == 3)
@@ -132,7 +134,7 @@ static uint16_t m_conn_handle = BLE_CONN_HANDLE_INVALID;                        
    static ble_xx_service_t                     m_xxs;
    static ble_yy_service_t                     m_yys;
  */
-
+// 0X1800
 // YOUR_JOB: Use UUIDs for service(s) used in your application.
 static ble_uuid_t m_adv_uuids[] = {{BLE_UUID_HUMAN_INTERFACE_DEVICE_SERVICE, BLE_UUID_TYPE_BLE}}; /**< Universally unique service identifiers. */
 
@@ -332,6 +334,7 @@ static void gap_params_init(void)
     /* YOUR_JOB: Use an appearance value matching the application's use case.
        err_code = sd_ble_gap_appearance_set(BLE_APPEARANCE_);
        APP_ERROR_CHECK(err_code); */
+    err_code = sd_ble_gap_appearance_set(BLE_APPEARANCE_GENERIC_THERMOMETER);
 
     memset(&gap_conn_params, 0, sizeof(gap_conn_params));
 
@@ -372,8 +375,8 @@ static void gap_params_init(void)
 
 /**@brief Function for initializing services that will be used by the application.
  */
-static void services_init(void)
-{
+//static void services_init(void)
+//{
     /* YOUR_JOB: Add code to initialize the services used by the application.
        uint32_t                           err_code;
        ble_xxs_init_t                     xxs_init;
@@ -397,7 +400,7 @@ static void services_init(void)
        err_code = ble_yy_service_init(&yys_init, &yy_init);
        APP_ERROR_CHECK(err_code);
      */
-}
+//}
 
 
 /**@brief Function for handling the Connection Parameters Module.
@@ -588,6 +591,9 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
             }
         } break; // BLE_GATTS_EVT_RW_AUTHORIZE_REQUEST
 
+        case BLE_GATTS_EVT_WRITE:
+
+            break;
 #if (NRF_SD_BLE_API_VERSION == 3)
         case BLE_GATTS_EVT_EXCHANGE_MTU_REQUEST:
             err_code = sd_ble_gatts_exchange_mtu_reply(p_ble_evt->evt.gatts_evt.conn_handle,
@@ -616,10 +622,10 @@ static void ble_evt_dispatch(ble_evt_t * p_ble_evt)
      * Remember to call ble_conn_state_on_ble_evt before calling any ble_conns_state_* functions. */
     ble_conn_state_on_ble_evt(p_ble_evt);
     pm_on_ble_evt(p_ble_evt);
-    ble_conn_params_on_ble_evt(p_ble_evt);
-    bsp_btn_ble_on_ble_evt(p_ble_evt);
-    on_ble_evt(p_ble_evt);
-    ble_advertising_on_ble_evt(p_ble_evt);
+    ble_conn_params_on_ble_evt(p_ble_evt);  //+
+    bsp_btn_ble_on_ble_evt(p_ble_evt);      //+
+    on_ble_evt(p_ble_evt);                  //+
+    ble_advertising_on_ble_evt(p_ble_evt);  //+
     /*YOUR_JOB add calls to _on_ble_evt functions from each service your application is using
        ble_xxs_on_ble_evt(&m_xxs, p_ble_evt);
        ble_yys_on_ble_evt(&m_yys, p_ble_evt);
@@ -918,12 +924,20 @@ void updateDeviceName(void)
     rezTIntPart   = rezMesTemperature;
     rezTFloatPart = (((rezMesTemperature >= 0) ? (rezMesTemperature) : ((-1 * rezMesTemperature))) - ((rezTIntPart >= 0) ? (rezTIntPart) : ((-1 * rezTIntPart)))) * 10;
     sprintf((char*)(&devName), "DEVEX T = %2d.%1d C", (rezTIntPart < 100 && rezTIntPart > -100  ) ? (rezTIntPart) : (-99), rezTFloatPart);
+
+    ble_gap_conn_sec_mode_t sec_mode;
+
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&sec_mode);
+    sd_ble_gap_device_name_set(&sec_mode,
+                              (const uint8_t *)devName,
+                               strlen((char*)devName));
+
     //configUpdate.saveData[0] = wordCnt;
     //configUpdate.deviceName[12] = mat[wordCnt];
-    nrf_nvmc_page_erase(GET_PAGE_ADDRESS(CONFIG_PAGE));
-    nrf_nvmc_write_bytes(GET_PAGE_ADDRESS(CONFIG_PAGE), devName, sizeof(devName));
+    //-nrf_nvmc_page_erase(GET_PAGE_ADDRESS(CONFIG_PAGE));
+    //-nrf_nvmc_write_bytes(GET_PAGE_ADDRESS(CONFIG_PAGE), devName, sizeof(devName));
 
-    NVIC_SystemReset();
+    //-NVIC_SystemReset();
 }
 
 
@@ -938,11 +952,12 @@ int main(void)
     timerInit();
     initI2C_Sensor();
 
+
     // Initialize.
     err_code = NRF_LOG_INIT(NULL);
     APP_ERROR_CHECK(err_code);
-
     timers_init();
+
 
     buttons_leds_init(&erase_bonds);
     ble_stack_init();
