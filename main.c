@@ -910,10 +910,12 @@ void updateDeviceName(void)
     BME280_STATUS bmeStatus;
     int16_t       rezTIntPart;
     int16_t       rezTFloatPart;
+    int16_t       rezHIntPart;
+    int16_t       rezHFloatPart;
     float         rezMesHumidity;
 	float         rezMesTemperature;
 	float         rezMesPressure;
-	uint8_t       devName[] = "DEVEX T = -25.5 C";
+	uint8_t       devName[] = "DEVEX T = -25.5 C, H = 00.0 ";
 
 	if(BME280_STATUS_OK  != (bmeStatus = BME280_forcedMes(&sensorHandler, &rezMesTemperature,
                                                                           &rezMesPressure,
@@ -923,7 +925,9 @@ void updateDeviceName(void)
     }
     rezTIntPart   = rezMesTemperature;
     rezTFloatPart = (((rezMesTemperature >= 0) ? (rezMesTemperature) : ((-1 * rezMesTemperature))) - ((rezTIntPart >= 0) ? (rezTIntPart) : ((-1 * rezTIntPart)))) * 10;
-    sprintf((char*)(&devName), "DEVEX T = %2d.%1d C", (rezTIntPart < 100 && rezTIntPart > -100  ) ? (rezTIntPart) : (-99), rezTFloatPart);
+    rezHIntPart   = rezMesHumidity;
+    rezHFloatPart = (rezMesHumidity - rezMesHumidity) * 10;
+    sprintf((char*)(&devName), "DEVEX T = %2d.%1d C, H = %2d.%1d", (rezTIntPart < 100 && rezTIntPart > -100  ) ? (rezTIntPart) : (-99), rezTFloatPart, rezHIntPart, rezHFloatPart);
 
     ble_gap_conn_sec_mode_t sec_mode;
 
