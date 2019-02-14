@@ -846,8 +846,12 @@ static void advertising_start(void)
     APP_ERROR_CHECK(err_code);
 }
 
-#include "bme280Interface.h"
+
+#include "i2cHAL.h"
+#include "systemTime.h"
+#include "displaySsd1306HAL.h"
 #include "BME280_user_interface.h"
+#include "screenHall.h"
 
 BME280Handler sensorHandler;
 
@@ -855,10 +859,9 @@ BME280_STATUS initI2C_Sensor(void){
 	BME280_STATUS bmeStatus;
 	bool sensorIsOnLine = false;
 
-	bme280InterfaceInit();
 
 	BME280_setI2CAddress(&sensorHandler, BME280_ADDRESS_LOW);
-    // Is sensor online ?
+    // Is sensor on the line
 	if(BME280_STATUS_OK  != (bmeStatus = BME280_isOnLine(&sensorHandler, &sensorIsOnLine) ) ){
         return bmeStatus;
 	}
@@ -945,6 +948,32 @@ void updateDeviceName(void)
 }
 
 
+bool senDisplayData(uint8_t displayAddress, uint8_t data[], uint16_t dataSize)
+{
+#define I2C_MAX_BUFF_SIZE 255
+#define I2C_MAX_BUFF_SIZE_ 254
+
+
+
+    uint8_t dataType =  data[0];
+    uint16_t txPos = 0;
+    uint16_t txSize = 0;
+
+    while(dataSize) {
+        if(i2cWrite(displayAddress, &data[txPos], txSize = ((dataSize <= I2C_MAX_BUFF_SIZE_) ? (dataSize) : (I2C_MAX_BUFF_SIZE))) != NRF_SUCCESS) {
+            return false;
+        }
+        if(txSize == dataSize) {
+            return true;
+        }
+        txPos += I2C_MAX_BUFF_SIZE_;
+        dataSize -= I2C_MAX_BUFF_SIZE_;
+        data[txPos] = dataType;
+    }
+
+    return true;
+}
+
 /**@brief Function for application main entry.
  */
 int main(void)
@@ -953,9 +982,21 @@ int main(void)
     bool     erase_bonds;
     uint32_t updateNameCnt = UPDATE_NAME_INTERVAL_MS;
 
-    timerInit();
-    initI2C_Sensor();
+    systemTimeInit();
+    i2cInit();
+    //initI2C_Sensor();
+    displayInit(senDisplayData);
 
+    sendTestString_1();
+
+    uint32_t startTime = getSystemTime();
+    while(1) {
+        if(!isTimeout(startTime, 1000))
+        {continue;}
+        startTime = getSystemTime();
+        //sendTestString();
+        sendTestString();
+    }
 
     // Initialize.
     err_code = NRF_LOG_INIT(NULL);
@@ -985,10 +1026,10 @@ int main(void)
     for (;;)
     {
 
-        if(getSysTime() >= updateNameCnt)
+        if(getSystemTime() >= updateNameCnt)
         {
             updateDeviceName();
-            updateNameCnt = getSysTime() + UPDATE_NAME_INTERVAL_MS;
+            updateNameCnt = getSystemTime() + UPDATE_NAME_INTERVAL_MS;
         }
 
         //blinkComtrol();
