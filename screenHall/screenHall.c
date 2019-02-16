@@ -1,393 +1,131 @@
 #include "stdint.h"
 #include "string.h"
 
+#include "screenHall.h"
 #include "displaySsd1306HAL.h"
 
-extern const uint8_t clearDisplay[4*128];
-//extern const uint8_t testString[];
+#include "symbolsArial12pts.symb"
+#include "symbolsArial8pts.symb"
+
+
+
 static DisplayFrame displayFrame;
 
+static uint8_t x;
+static uint8_t y;
 
-const uint8_t testString[] =  {//    #
-/* @16 'Ã' (8 pixels wide) */
-	//   ######
-	//    #   #
-	//    #
-	//    #
-	//    #
-	//    #
-	//    #
-	//   ###
-	//
-	//
-	0b00000000, 0b00000000, 0b10000001, 0b11111111, 0b10000001, 0b00000001, 0b00000001, 0b00000011,
-        0b00000000,
-/* @32 'Ä' (8 pixels wide) */
-	//   ######
-	//    #  #
-	//    #  #
-	//    #  #
-	//    #  #
-	//   #   #
-	//   #   #
-	//  #######
-	//  #     #
-	//  #     #
-	0b00000000, 0b10000000, 0b11100001, 0b10011111, 0b10000001, 0b10000001, 0b11111111, 0b10000001,
-        0b00000000,
-/* @48 'Å' (8 pixels wide) */
-	//  ######
-	//   #   #
-	//   # #
-	//   ###
-	//   # #
-	//   #
-	//   #   #
-	//  ######
-	//
-	//
-	0b00000000, 0b10000001, 0b11111111, 0b10001001, 0b10011101, 0b10000001, 0b11000011, 0b00000000,
-        0b00000000,
-        0b00000000,
-        0b00000000,
-        0b00000000,
-/* @32 'Ä' (8 pixels wide) */
-	//   ######
-	//    #  #
-	//    #  #
-	//    #  #
-	//    #  #
-	//   #   #
-	//   #   #
-	//  #######
-	//  #     #
-	//  #     #
-	0b00000000, 0b10000000, 0b11100001, 0b10011111, 0b10000001, 0b10000001, 0b11111111, 0b10000001,
-        0b00000000,
-/* @48 'Å' (8 pixels wide) */
-	//  ######
-	//   #   #
-	//   # #
-	//   ###
-	//   # #
-	//   #
-	//   #   #
-	//  ######
-	//
-	//
-	0b00000000, 0b10000001, 0b11111111, 0b10001001, 0b10011101, 0b10000001, 0b11000011, 0b00000000,
-        0b00000000,
-/* @80 'Í' (8 pixels wide) */
-	// ### ###
-	//  #   #
-	//  #   #
-	//  #####
-	//  #   #
-	//  #   #
-	//  #   #
-	// ### ###
-	//
-	//
-	0b10000001, 0b11111111, 0b10001001, 0b00001000, 0b10001001, 0b11111111, 0b10000001, 0b00000000,
-        0b00000000,
-/* @96 'Ü' (8 pixels wide) */
-	//  ###
-	//   #
-	//   #
-	//   ####
-	//   #   #
-	//   #   #
-	//   #   #
-	//  #####
-	//
-	//
-	0b00000000, 0b10000001, 0b11111111, 0b10001001, 0b10001000, 0b10001000, 0b01110000, 0b00000000,
-        0b00000000,
-/* @16 'Ã' (8 pixels wide) */
-	//   ######
-	//    #   #
-	//    #
-	//    #
-	//    #
-	//    #
-	//    #
-	//   ###
-	//
-	//
-	0b00000000, 0b00000000, 0b10000001, 0b11111111, 0b10000001, 0b00000001, 0b00000001, 0b00000011,
-        0b00000000,
-/* @64 'È' (8 pixels wide) */
-	// ### ###
-	//  #   #
-	//  #  ##
-	//  # # #
-	//  # # #
-	//  ##  #
-	//  #   #
-	// ### ###
-	//
-	//
-	0b10000001, 0b11111111, 0b10100001, 0b00011000, 0b10000101, 0b11111111, 0b10000001, 0b00000000,
-        0b00000000,
-        0b00000000,
-        0b00000000,
-/* @0 '!' (8 pixels wide) */
-	//     #
-	//     #
-	//     #
-	//     #
-	//     #
-	//     #
-	//
-	//     #
-	//
-	//
-	0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b10111111, 0b00000000, 0b00000000, 0b00000000,
-        0b00000000,
-        0b00000000,
-	// @0 '(' (15 pixels wide)
-	//         #
-	//        #
-	//        #
-	//        #
-	//       #
-	//       #
-	//       #
-	//       #
-	//       #
-	//       #
-	//       #
-	//        #
-	//        #
-	//        #
-	//         #
-	// @132 '0' (11 pixels wide)
-	//    ###
-	//   #   #
-	//   #   #
-	//   #   #
-	//   #   #
-	//   #   #
-	//   #   #
-	//    ###
-	//
-	//
-	0b00000000, 0b00000000, 0b01111110, 0b10000001, 0b10000001, 0b10000001, 0b01111110, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
-	0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
-
-	// @154 '1' (11 pixels wide)
-	//     #
-	//    ##
-	//   # #
-	//     #
-	//     #
-	//     #
-	//     #
-	//     #
-	//
-	//
-	0b00000000, 0b00000000, 0b00000100, 0b00000010, 0b11111111, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
-	0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
-
-	// @176 '2' (11 pixels wide)
-	//    ###
-	//   #   #
-	//       #
-	//       #
-	//      #
-	//     #
-	//    #
-	//   #####
-	//
-	//
-	0b00000000, 0b00000000, 0b10000010, 0b11000001, 0b10100001, 0b10010001, 0b10001110, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
-	0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
-
-	// @198 '3' (11 pixels wide)
-	//    ###
-	//   #   #
-	//       #
-	//     ##
-	//       #
-	//       #
-	//   #   #
-	//    ###
-	//
-	//
-	0b00000000, 0b00000000, 0b01000010, 0b10000001, 0b10001001, 0b10001001, 0b01110110, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
-	0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
-
-	// @220 '4' (11 pixels wide)
-	//      #
-	//     ##
-	//    # #
-	//    # #
-	//   #  #
-	//   #####
-	//      #
-	//      #
-	//
-	//
-	0b00000000, 0b00000000, 0b00110000, 0b00101100, 0b00100010, 0b11111111, 0b00100000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
-	0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
-
-	// @242 '5' (11 pixels wide)
-	//    ####
-	//    #
-	//   #
-	//   ####
-	//       #
-	//       #
-	//   #   #
-	//    ###
-	//
-	//
-	0b00000000, 0b00000000, 0b01001100, 0b10001011, 0b10001001, 0b10001001, 0b01110001, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
-	0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
-
-	// @264 '6' (11 pixels wide)
-	//    ###
-	//   #   #
-	//   #
-	//   ####
-	//   #   #
-	//   #   #
-	//   #   #
-	//    ###
-	//
-	//
-	0b00000000, 0b00000000, 0b01111110, 0b10001001, 0b10001001, 0b10001001, 0b01110010, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
-	0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
-
-	// @286 '7' (11 pixels wide)
-	//   #####
-	//      #
-	//      #
-	//     #
-	//     #
-	//    #
-	//    #
-	//    #
-	//
-	//
-	0b00000000, 0b00000000, 0b00000001, 0b11100001, 0b00011001, 0b00000111, 0b00000001, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
-	0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
-
-	// @308 '8' (11 pixels wide)
-	//    ###
-	//   #   #
-	//   #   #
-	//    ###
-	//   #   #
-	//   #   #
-	//   #   #
-	//    ###
-	//
-	//
-	0b00000000, 0b00000000, 0b01110110, 0b10001001, 0b10001001, 0b10001001, 0b01110110, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
-	0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
-};
-
-const uint8_t test2[] =
+static const uint8_t* arial12PtsGetSumbol(const uint8_t *symbol,
+                                          uint8_t *height,
+                                          uint8_t *width,
+                                          SymbolType symbolType)
 {
-	//   #
-	//    #
-	//     #
-	//     #
-	//     #
-	//     #
-	//     #
-	//     #
-	//    #
-	//   #
-	0b00000000, 0b00000000, 0b00000001, 0b00000010, 0b11111100, 0b00000000, 0b00000000,
-	0b00000000, 0b00000000, 0b00000010, 0b00000001, 0b00000000, 0b00000000, 0b00000000,
-	//  #####
-	//  #    #
-	//  #    #
-	//  ######
-	//  #    #
-	//  #    #
-	//  #    #
-	//  #####
-	//
-	//
-	0b00000000, 0b11111111, 0b10001001, 0b10001001, 0b10001001, 0b10001001, 0b01111110,
-	0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
-	//  #####
-	//  #
-	//  #
-	//  #####
-	//  #
-	//  #
-	//  #
-	//  #####
-	//
-	//
-	0b00000000, 0b11111111, 0b10001001, 0b10001001, 0b10001001, 0b10001001, 0b00000000,
-	0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
-	//  #    #
-	//  #   ##
-	//  #  # #
-	//  #  # #
-	//  # #  #
-	//  # #  #
-	//  ##   #
-	//  #    #
-	//
-	//
-	0b00000000, 0b11111111, 0b01000000, 0b00110000, 0b00001100, 0b00000010, 0b11111111,
-	0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
-	// ######
-	// #    #
-	// #    #
-	// #    #
-	// #    #
-	// #    #
-	// #    #
-	// #    #
-	//
-	//
-	0b11111111, 0b00000001, 0b00000001, 0b00000001, 0b00000001, 0b11111111, 0b00000000,
-	0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
-	//  ####
-	//  #   #
-	//  #   #
-	//  #   #
-	//  ####
-	//  #
-	//  #
-	//  #
-	//
-	//
-	0b00000000, 0b11111111, 0b00010001, 0b00010001, 0b00010001, 0b00001110, 0b00000000,
-	0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
-	//  #####
-	//    #
-	//    #
-	//    #
-	//    #
-	//    #
-	//    #
-	//    #
-	//
-	//
-	0b00000000, 0b00000001, 0b00000001, 0b11111111, 0b00000001, 0b00000001, 0b00000000,
-	0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
-};
+#define WIDTH_POS   0
+#define HEIGHT_POS  1
+#define ADDRESS_POS 2
+    uint8_t symbolQyantity;
+    const uint16_t (*symbolDescr)[3];
+    const uint8_t *symbolList;
+    switch(symbolType) {
+    case ARIAL_8PTS:
+        symbolQyantity = sizeof(arial_8ptDescriptors)/sizeof(arial_8ptDescriptors[0]);
+        symbolDescr    = (const uint16_t(*)[3])arial_8ptDescriptors;
+        symbolList     = arial_8ptBitmaps;
+        break;
+    case ARIAL_12PTS:
+        symbolQyantity = sizeof(arial_11ptDescriptors)/sizeof(arial_11ptDescriptors[0]);
+        symbolDescr    = (const uint16_t(*)[3])arial_11ptDescriptors;
+        symbolList     = arial_11ptBitmaps;
+        break;
+    }
 
+    uint8_t pos = *symbol - '!';
+    if(pos >= symbolQyantity) {
+        return NULL;
+    }
 
-
-bool sendTestString(void)
-{
-    memset(displayFrame.buffer, 0, sizeof(displayFrame.buffer));
-    memcpy(displayFrame.buffer, testString, sizeof(testString));
-    return displaySendFrame(&displayFrame);
+    *height = symbolDescr[pos][HEIGHT_POS];
+    *width  = symbolDescr[pos][WIDTH_POS];
+    return symbolList + symbolDescr[pos][ADDRESS_POS];
 }
 
-bool sendTestString_1(void)
+static bool addImage(const uint8_t *image, uint8_t heigh, uint8_t width)
 {
-    memset(displayFrame.buffer, 0, sizeof(displayFrame.buffer));
-    memcpy(displayFrame.buffer, test2, sizeof(test2));
+    uint8_t  (*tImage)[width] = (uint8_t(*)[width])image;
+    uint8_t yByte = y >> 3;
+    uint8_t yBit = y - yByte * 8;
+    uint8_t k;
+    uint8_t i = 0;
+    uint8_t yImag = 0;
+    uint8_t shiftImg = 0;
+
+    while(yImag < heigh) {
+        yImag += 8 - ( shiftImg = (yImag < heigh) ? (yBit) : (0));
+        for(k = 0; k < width; k++) {
+            displayFrame.buffer[yByte][x + k] |= (tImage[i][k] << shiftImg);
+        }
+        i = yImag >> 3;
+        yImag += 8 - ( shiftImg = (yImag < heigh) ? (8 - yBit) : (0));
+        if(shiftImg == 0) {
+            break;
+        }
+        yByte++;
+        for(k = 0; k < width; k++) {
+            displayFrame.buffer[yByte][x + k] |= (tImage[i][k] >> shiftImg);
+        }
+        i = yImag >> 3;
+    }
+    return true;
+}
+
+bool screenAddString(const uint8_t *str, SymbolType symbolType)
+{
+    #define SPACE_BITS  4
+    #define SYMBOL_BITS  2
+    const uint8_t *symbol;
+    uint8_t symbolHeigh;
+    uint8_t symbolWidth;
+    while(*str) {
+        symbol = arial12PtsGetSumbol(str, &symbolHeigh, &symbolWidth, symbolType);
+        if((*symbol == ' ') || (symbol == NULL)) {
+            x += SPACE_BITS;
+            str++;
+            continue;
+        }
+        if((x + symbolWidth) >= FRAME_WIDTH_DOT) {
+           if((y + symbolHeigh) >= FRAME_HEIGHT_DOT) {
+               return false;
+           }
+           y += symbolHeigh;
+           x = 0;
+        }
+
+        addImage(symbol, symbolHeigh, symbolWidth);
+        x += symbolWidth;
+        str++;
+    }
+    return true;
+}
+
+bool screenAddImage(const uint8_t *image, uint8_t imageHeigh, uint8_t imageWidth)
+{
+    return addImage(image, imageHeigh, imageWidth);
+}
+
+
+bool screenClearBuff(void)
+{
+   memset(displayFrame.buffer, 0, sizeof(displayFrame.buffer));
+   return true;
+}
+
+bool screenSetPosition(uint8_t inX, uint8_t inY)
+{
+    x = inX;
+    y = inY;
+    return true;
+}
+
+bool screenSend(void)
+{
     return displaySendFrame(&displayFrame);
 }

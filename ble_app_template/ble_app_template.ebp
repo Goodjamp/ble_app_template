@@ -356,11 +356,17 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="..\screenHall\screenHall.h" />
-		<Unit filename="..\screenHall\sumbolsArial12pts.c">
+		<Unit filename="..\screenHall\symbolsArial12pts.symb">
 			<Option compilerVar="CC" />
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="Release" />
 		</Unit>
-		<Unit filename="..\screenHall\sumbolsArial8pts.c">
+		<Unit filename="..\screenHall\symbolsArial8pts.symb">
 			<Option compilerVar="CC" />
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="Release" />
 		</Unit>
 		<Unit filename="..\systemTime\systemTime.c">
 			<Option compilerVar="CC" />

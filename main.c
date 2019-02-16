@@ -932,12 +932,13 @@ void updateDeviceName(void)
     rezHFloatPart = (rezMesHumidity - rezMesHumidity) * 10;
     sprintf((char*)(&devName), "DEVEX T = %2d.%1d C, H = %2d.%1d", (rezTIntPart < 100 && rezTIntPart > -100  ) ? (rezTIntPart) : (-99), rezTFloatPart, rezHIntPart, rezHFloatPart);
 
-    ble_gap_conn_sec_mode_t sec_mode;
+/*    ble_gap_conn_sec_mode_t sec_mode;
 
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&sec_mode);
     sd_ble_gap_device_name_set(&sec_mode,
                               (const uint8_t *)devName,
                                strlen((char*)devName));
+*/
 
     //configUpdate.saveData[0] = wordCnt;
     //configUpdate.deviceName[12] = mat[wordCnt];
@@ -952,8 +953,6 @@ bool senDisplayData(uint8_t displayAddress, uint8_t data[], uint16_t dataSize)
 {
 #define I2C_MAX_BUFF_SIZE 255
 #define I2C_MAX_BUFF_SIZE_ 254
-
-
 
     uint8_t dataType =  data[0];
     uint16_t txPos = 0;
@@ -974,8 +973,62 @@ bool senDisplayData(uint8_t displayAddress, uint8_t data[], uint16_t dataSize)
     return true;
 }
 
+const uint8_t download2Bitmaps[] =
+{
+
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0xA8, 0xD0, 0xB0, 0x78, 0xCA, 0x6C, 0xA8, 0xA0, 0x40, 0x80, 0x80, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x34, 0xDA, 0x35, 0x01, 0x19, 0xA2, 0x65, 0xC2, 0xD5, 0x6A, 0xC5, 0x5A, 0xA3, 0x59, 0x44, 0x98, 0x2C, 0xA2, 0x54, 0x68, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x57, 0x3C, 0x32, 0x0C, 0x50, 0x01, 0x0E, 0x1A, 0x15, 0x37, 0x0F, 0x1A, 0x07, 0x05, 0x52, 0x2E, 0x4C, 0x09, 0x12, 0x48, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x02, 0xAC, 0x0A, 0x0E, 0x25, 0x44, 0x76, 0x32, 0x08, 0x04, 0x04, 0xAC, 0x09, 0x1F, 0x12, 0x09, 0x06, 0x03, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00,
+};
+
+
 /**@brief Function for application main entry.
  */
+
+ void updateImage(void)
+ {
+     #define SHIFT_SIZE     10
+    uint8_t temperaturStr[15];
+    uint8_t humidStr[15];
+
+
+    BME280_STATUS bmeStatus;
+    int16_t       rezTIntPart;
+    int16_t       rezTFloatPart;
+    int16_t       rezHIntPart;
+    int16_t       rezHFloatPart;
+    float         rezMesHumidity;
+	float         rezMesTemperature;
+	float         rezMesPressure;
+
+	if(BME280_STATUS_OK  != (bmeStatus = BME280_forcedMes(&sensorHandler, &rezMesTemperature,
+                                                                          &rezMesPressure,
+					                                                      &rezMesHumidity)))
+    {
+        return;
+    }
+    rezTIntPart   = rezMesTemperature;
+    rezTFloatPart = (((rezMesTemperature >= 0) ? (rezMesTemperature) : ((-1 * rezMesTemperature))) - ((rezTIntPart >= 0) ? (rezTIntPart) : ((-1 * rezTIntPart)))) * 10;
+    rezHIntPart   = rezMesHumidity;
+    rezHFloatPart = (rezMesHumidity - rezMesHumidity) * 10;
+    sprintf((char*)(temperaturStr), "T = %2d . %1d , C", (rezTIntPart < 100 && rezTIntPart > -100  ) ? (rezTIntPart) : (-99), rezTFloatPart);
+    sprintf((char*)(humidStr),      "H = %2d . %1d , %%", rezHIntPart, rezHFloatPart);
+
+    static uint8_t shift = SHIFT_SIZE;
+    if(++shift >= SHIFT_SIZE * 2 ) {
+        shift = 0;
+    }
+    screenClearBuff();
+    screenSetPosition(0, 0);
+    screenAddString(temperaturStr, ARIAL_12PTS);
+    screenSetPosition(0, 15);
+    screenAddString(humidStr, ARIAL_12PTS);
+    screenSetPosition(128 - (32 + 1 + ((shift >= SHIFT_SIZE) ? (SHIFT_SIZE * 2 - shift) : (shift)))
+                      , 0);
+    screenAddImage(download2Bitmaps, 32, 32);
+    screenSend();
+
+ }
+
+
 int main(void)
 {
     uint32_t err_code;
@@ -984,18 +1037,18 @@ int main(void)
 
     systemTimeInit();
     i2cInit();
-    //initI2C_Sensor();
+    uint32_t startTime = getSystemTime();
+
+    while(!isTimeout(startTime, 50)) {}
+    initI2C_Sensor();
     displayInit(senDisplayData);
 
-    sendTestString_1();
-
-    uint32_t startTime = getSystemTime();
     while(1) {
-        if(!isTimeout(startTime, 1000))
-        {continue;}
+        if(!isTimeout(startTime, 100)) {
+            continue;
+        }
         startTime = getSystemTime();
-        //sendTestString();
-        sendTestString();
+        updateImage();
     }
 
     // Initialize.

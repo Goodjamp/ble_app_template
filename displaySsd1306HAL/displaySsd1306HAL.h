@@ -13,7 +13,7 @@
 #pragma pack(push, 1)
 typedef struct{
     uint8_t reserved;
-    uint8_t buffer[FRAME_BUFFER_SIZE];
+    uint8_t buffer[FRAME_HEIGHT_DOT / 8][FRAME_WIDTH_DOT];
 }DisplayFrame;
 #pragma pack(pop)
 
