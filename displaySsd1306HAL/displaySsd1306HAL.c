@@ -171,8 +171,27 @@ void displayInit(SendBuffCB sendBuffCB)
     sendCommand(comandBuff,1);
 
     comandBuff[0] = SSD1306_PAGE_START_END;
-    comandBuff[1] = 0;
-    comandBuff[2] = 3;
+    comandBuff[1] = 0; // first page
+    comandBuff[2] = 3; // last page
     sendCommand(comandBuff,3);
-
 }
+
+bool displaySetCursorXPos(uint8_t posX)
+{
+    uint8_t comandBuff[4];
+    comandBuff[0] = SSD1306_ROW_START_LO | (posX & 0xF);
+    sendCommand(comandBuff,1);
+
+    comandBuff[0] = SSD1306_ROW_START_HI | ((posX & 0xF0) >> 4);
+    return sendCommand(comandBuff,1);
+}
+
+bool displaySetYArea(Ssd1306YPos startY, Ssd1306YPos stopY)
+{
+    uint8_t comandBuff[4];
+    comandBuff[0] = SSD1306_PAGE_START_END;
+    comandBuff[1] = startY; // first page
+    comandBuff[2] = stopY; // last page
+    return sendCommand(comandBuff,3);
+}
+

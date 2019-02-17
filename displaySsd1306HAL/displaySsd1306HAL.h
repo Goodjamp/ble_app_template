@@ -17,9 +17,22 @@ typedef struct{
 }DisplayFrame;
 #pragma pack(pop)
 
+typedef enum {
+    SSD1306_Y_POS_0,
+    SSD1306_Y_POS_8,
+    SSD1306_Y_POS_16,
+    SSD1306_Y_POS_32,
+    SSD1306_Y_POS_40,
+    SSD1306_Y_POS_48,
+    SSD1306_Y_POS_56,
+    SSD1306_Y_POS_64,
+}Ssd1306YPos;
+
 typedef bool (*SendBuffCB)(uint8_t displayAddres, uint8_t data[], uint16_t dataSize);
 
 void displayInit(SendBuffCB sendBuffCB);
 bool displaySendFrame(DisplayFrame *frame);
+bool displaySetCursorXPos(uint8_t posX);
+bool displaySetYArea(Ssd1306YPos startY, Ssd1306YPos stopY);
 
 #endif

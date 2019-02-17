@@ -45,50 +45,11 @@ void systemTimeInit(void)
     nrf_timer_task_trigger(MY_TIM, NRF_TIMER_TASK_START);
 }
 
-
-/*
-void gpioInit(void)
-{
-    nrf_gpio_cfg_output(LED_CONTROL_PIN);
-    nrf_gpio_cfg_output(CONTROL_PIN);
-}
-*/
-
 void TIMER1_IRQHandler(void)
 {
     cntMs++;
-    /*
-    static uint16_t intCounter = 0;
-    uint8_t wordCnt = configFlash->saveData[0];
-    if( intCounter++ > (UPDATE_NAME_S*1000/TIMER_INT_MS) )
-    {
-        if(memcmp(defName, configFlash->deviceName, 11 ) != 0)
-        {
-            memcpy(configUpdate.deviceName, defName, sizeof(defName));
-        }
-        else
-        {
-            memcpy(configUpdate.deviceName, configFlash->deviceName, sizeof(defName));
-        }
-
-        if ( ++wordCnt >= sizeof(mat))
-        {
-            wordCnt = 0;
-        }
-
-        configUpdate.saveData[0] = wordCnt;
-        configUpdate.deviceName[12] = mat[wordCnt];
-        nrf_nvmc_page_erase(GET_PAGE_ADDRESS(CONFIG_PAGE));
-        nrf_nvmc_write_bytes(GET_PAGE_ADDRESS(CONFIG_PAGE), (uint8_t*)&configUpdate, sizeof(configurationS_t));
-
-        NVIC_SystemReset();
-    }
-    */
     nrf_timer_task_trigger(MY_TIM, NRF_TIMER_TASK_CLEAR);
     nrf_timer_event_clear(MY_TIM, NRF_TIMER_EVENT_COMPARE0);
-    /*
-    nrf_gpio_pin_toggle(LED_CONTROL_PIN);
-    */
 }
 
 uint32_t getSystemTime(void)

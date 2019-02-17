@@ -14,7 +14,7 @@ static DisplayFrame displayFrame;
 static uint8_t x;
 static uint8_t y;
 
-static const uint8_t* arial12PtsGetSumbol(const uint8_t *symbol,
+static const uint8_t* getSymbol(const uint8_t *symbol,
                                           uint8_t *height,
                                           uint8_t *width,
                                           SymbolType symbolType)
@@ -79,18 +79,18 @@ static bool addImage(const uint8_t *image, uint8_t heigh, uint8_t width)
 
 bool screenAddString(const uint8_t *str, SymbolType symbolType)
 {
-    #define SPACE_BITS  4
-    #define SYMBOL_BITS  2
+    #define SPACE_BITS  2
     const uint8_t *symbol;
     uint8_t symbolHeigh;
     uint8_t symbolWidth;
     while(*str) {
-        symbol = arial12PtsGetSumbol(str, &symbolHeigh, &symbolWidth, symbolType);
-        if((*symbol == ' ') || (symbol == NULL)) {
+        symbol = getSymbol(str, &symbolHeigh, &symbolWidth, symbolType);
+        if((*str == ' ') || (symbol == NULL)) {
             x += SPACE_BITS;
             str++;
             continue;
         }
+
         if((x + symbolWidth) >= FRAME_WIDTH_DOT) {
            if((y + symbolHeigh) >= FRAME_HEIGHT_DOT) {
                return false;
@@ -100,7 +100,7 @@ bool screenAddString(const uint8_t *str, SymbolType symbolType)
         }
 
         addImage(symbol, symbolHeigh, symbolWidth);
-        x += symbolWidth;
+        x += symbolWidth + SPACE_BITS;
         str++;
     }
     return true;
