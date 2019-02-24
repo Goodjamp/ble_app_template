@@ -851,7 +851,7 @@ static void advertising_start(void)
 #include "systemTime.h"
 #include "displaySsd1306HAL.h"
 #include "BME280_user_interface.h"
-#include "screenHall.h"
+#include "frameHall.h"
 
 BME280Handler sensorHandler;
 
@@ -949,7 +949,7 @@ void updateDeviceName(void)
 }
 
 
-bool senDisplayData(uint8_t displayAddress, uint8_t data[], uint16_t dataSize)
+bool sendDisplayData(uint8_t displayAddress, uint8_t data[], uint16_t dataSize)
 {
 #define I2C_MAX_BUFF_SIZE 255
 #define I2C_MAX_BUFF_SIZE_ 254
@@ -982,9 +982,12 @@ const uint8_t download2Bitmaps[] =
 /**@brief Function for application main entry.
  */
 
+DisplayFrame displayFrame;
+FrameDescr   frameDescr;
+
  void updateImage(void)
  {
-     #define SHIFT_SIZE     90
+     #define SHIFT_SIZE     130
     uint8_t temperaturStr[15];
     uint8_t humidStr[15];
 
@@ -1017,15 +1020,15 @@ const uint8_t download2Bitmaps[] =
     }
     displaySetCursorXPos(0);
     displaySetYArea(SSD1306_Y_POS_0, SSD1306_Y_POS_32);
-    screenClearBuff();
-    screenSetPosition(0, 0);
-    screenAddString(temperaturStr, ARIAL_12PTS);
-    screenSetPosition(0, 15);
-    screenAddString(humidStr, ARIAL_12PTS);
-    screenSetPosition(128 - (32 + 1 + ((shift >= SHIFT_SIZE) ? (SHIFT_SIZE * 2 - shift) : (shift)))
-                      , 0);
-    screenAddImage(download2Bitmaps, 32, 32);
-    screenSend();
+    frameClear(&frameDescr);
+    frameSetPosition(&frameDescr,0, 0);
+    frameAddString(&frameDescr, temperaturStr, SEGOEPRINT_14PTS);
+    //frameSetPosition(&frameDescr, 0, 15);
+    //frameAddString(&frameDescr, humidStr, ARIAL_11PTS);
+    //frameSetPosition(&frameDescr, 128 - (32 + 1 + ((shift >= SHIFT_SIZE) ? (SHIFT_SIZE * 2 - shift) : (shift))), 0);
+    //frameAddImage(&frameDescr, download2Bitmaps, 32, 32);
+    displaySendFrame(&displayFrame);
+    //screenSend();
  }
 
 
@@ -1041,7 +1044,8 @@ int main(void)
 
     while(!isTimeout(startTime, 50)) {}
     initI2C_Sensor();
-    displayInit(senDisplayData);
+    displayInit(sendDisplayData, SSD1306_Y_POS_0, SSD1306_Y_POS_32);
+    frameInit(&frameDescr, displayGetFrame(&displayFrame), FRAME_HEIGHT_DOT, FRAME_WIDTH_DOT);
 
     while(1) {
         if(!isTimeout(startTime, 100)) {

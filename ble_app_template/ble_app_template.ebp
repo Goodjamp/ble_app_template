@@ -352,22 +352,38 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="..\pca10028\s130\armgcc\ble_app_template_gcc_nrf51.ld" />
-		<Unit filename="..\screenHall\screenHall.c">
+		<Unit filename="..\screenHall\frameHall.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="..\screenHall\screenHall.h" />
+		<Unit filename="..\screenHall\frameHall.h" />
+		<Unit filename="..\screenHall\symbolsArial11pts.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\screenHall\symbolsArial11pts.h" />
 		<Unit filename="..\screenHall\symbolsArial12pts.symb">
 			<Option compilerVar="CC" />
 			<Option compile="1" />
 			<Option link="1" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="..\screenHall\symbolsArial16pts .c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\screenHall\symbolsArial16pts.h" />
+		<Unit filename="..\screenHall\symbolsArial8pts.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\screenHall\symbolsArial8pts.h" />
 		<Unit filename="..\screenHall\symbolsArial8pts.symb">
 			<Option compilerVar="CC" />
 			<Option compile="1" />
 			<Option link="1" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="..\screenHall\symbolsSegoePrint14pts.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\screenHall\symbolsSegoePrint14pts.h" />
 		<Unit filename="..\systemTime\systemTime.c">
 			<Option compilerVar="CC" />
 		</Unit>

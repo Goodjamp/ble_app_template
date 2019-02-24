@@ -91,7 +91,12 @@ bool displaySendFrame(DisplayFrame *frame)
     return sendBuff(displayAddressWrite, temp.pBuff, sizeof(DisplayFrame));
 }
 
-void displayInit(SendBuffCB sendBuffCB)
+uint8_t* displayGetFrame(DisplayFrame *frame)
+{
+    return frame->buffer;
+}
+
+void displayInit(SendBuffCB sendBuffCB, Ssd1306YPos startY, Ssd1306YPos stopY)
 {
     uint8_t comandBuff[4];
     sendBuff = sendBuffCB;
@@ -171,8 +176,8 @@ void displayInit(SendBuffCB sendBuffCB)
     sendCommand(comandBuff,1);
 
     comandBuff[0] = SSD1306_PAGE_START_END;
-    comandBuff[1] = 0; // first page
-    comandBuff[2] = 3; // last page
+    comandBuff[1] = startY; // first page
+    comandBuff[2] = stopY; // last page
     sendCommand(comandBuff,3);
 }
 

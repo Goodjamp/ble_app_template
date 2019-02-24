@@ -13,7 +13,7 @@
 #pragma pack(push, 1)
 typedef struct{
     uint8_t reserved;
-    uint8_t buffer[FRAME_HEIGHT_DOT / 8][FRAME_WIDTH_DOT];
+    uint8_t buffer[FRAME_BUFFER_SIZE];
 }DisplayFrame;
 #pragma pack(pop)
 
@@ -30,9 +30,10 @@ typedef enum {
 
 typedef bool (*SendBuffCB)(uint8_t displayAddres, uint8_t data[], uint16_t dataSize);
 
-void displayInit(SendBuffCB sendBuffCB);
+void displayInit(SendBuffCB sendBuffCB, Ssd1306YPos startY, Ssd1306YPos stopY);
 bool displaySendFrame(DisplayFrame *frame);
 bool displaySetCursorXPos(uint8_t posX);
 bool displaySetYArea(Ssd1306YPos startY, Ssd1306YPos stopY);
+uint8_t* displayGetFrame(DisplayFrame *frame);
 
 #endif
