@@ -45,9 +45,9 @@
 #define SSD1306_SWITCHCAPVCC        0x2
 /***************************************************/
 #define SSD1306_PAGE_START     0b10110000
+#define SSD1306_PAGE_START_END 0b00100010
 #define SSD1306_ROW_START_LO   0b00000000
 #define SSD1306_ROW_START_HI   0b00010000
-#define SSD1306_PAGE_START_END 0b00100010
 
 typedef enum {
     setDisplayOnOff_OFF = 0xAE,
@@ -83,7 +83,7 @@ bool sendData(uint8_t data[], uint16_t dataSize)
 
 bool displaySendFrame(DisplayFrame *frame)
 {
-    frame->reserved = CONTROL_DATA_SIMLE;
+    frame->command = CONTROL_DATA_SIMLE;
     union{
         uint8_t *pBuff;
         DisplayFrame *buff;
@@ -109,10 +109,6 @@ void displayInit(SendBuffCB sendBuffCB, Ssd1306YPos startY, Ssd1306YPos stopY)
     comandBuff[1] = 0x80;
     sendCommand(comandBuff,2);            // 0xD5
 
-    comandBuff[0] = SSD1306_SETMULTIPLEX;       // 0xA8
-    comandBuff[1] = 0x20;
-    sendCommand(comandBuff,2);
-
     comandBuff[0] = SSD1306_SETDISPLAYOFFSET;
     comandBuff[1] = 0x0;
     sendCommand(comandBuff,2);            // no offset
@@ -135,11 +131,6 @@ void displayInit(SendBuffCB sendBuffCB, Ssd1306YPos startY, Ssd1306YPos stopY)
 
     comandBuff[0] = SSD1306_COMSCANINC;         //C0
     sendCommand(comandBuff,1);            // rotate screen 180
-
-    comandBuff[0] = SSD1306_SETCOMPINS;         //DA
-    comandBuff[1] = 0x00;                       // !!!!!!!!!!!!!!!!!!!!! My configure !!
-    sendCommand(comandBuff,2);            // 0xDA
-    //sendCommand(0x12);
 
     comandBuff[0] = SSD1306_SETCONTRAST;
     comandBuff[1] = 0xF0;
@@ -164,10 +155,9 @@ void displayInit(SendBuffCB sendBuffCB, Ssd1306YPos startY, Ssd1306YPos stopY)
 
     comandBuff[0] = SSD1306_DISPLAYON;
     sendCommand(comandBuff,1);
-//-------------------------------------------------------
+
     comandBuff[0] = SSD1306_PAGE_START | 0;
     sendCommand(comandBuff,1);
-
 
     comandBuff[0] = SSD1306_ROW_START_LO | 0;
     sendCommand(comandBuff,1);
@@ -179,6 +169,15 @@ void displayInit(SendBuffCB sendBuffCB, Ssd1306YPos startY, Ssd1306YPos stopY)
     comandBuff[1] = startY; // first page
     comandBuff[2] = stopY; // last page
     sendCommand(comandBuff,3);
+
+    //Next configuration need for switch SSD1306 for work in 128*32 or 128*64 mode
+    comandBuff[0] = SSD1306_SETCOMPINS;         //DA
+    comandBuff[1] = 0b010010;
+    sendCommand(comandBuff,2);
+
+    comandBuff[0] = SSD1306_SETMULTIPLEX;       // 0xA8
+    comandBuff[1] = 0x3f;
+    sendCommand(comandBuff,2);
 }
 
 bool displaySetCursorXPos(uint8_t posX)

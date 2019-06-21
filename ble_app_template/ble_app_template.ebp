@@ -46,6 +46,7 @@
 					<Add option="-mthumb" />
 					<Add option="-mabi=aapcs" />
 					<Add option="-mcpu=cortex-m0" />
+					<Add library="m" />
 				</Linker>
 			</Target>
 			<Target title="Release">

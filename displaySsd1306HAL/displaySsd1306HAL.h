@@ -7,12 +7,12 @@
 #define DISPLAY_ADDRESS 0b0111100
 
 #define FRAME_WIDTH_DOT   128
-#define FRAME_HEIGHT_DOT  32
+#define FRAME_HEIGHT_DOT  64
 #define FRAME_BUFFER_SIZE  (FRAME_WIDTH_DOT * FRAME_HEIGHT_DOT / 8)
 
 #pragma pack(push, 1)
 typedef struct{
-    uint8_t reserved;
+    uint8_t command; // this field is use for set command to ssd1306 !!!
     uint8_t buffer[FRAME_BUFFER_SIZE];
 }DisplayFrame;
 #pragma pack(pop)

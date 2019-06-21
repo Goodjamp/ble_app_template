@@ -146,7 +146,7 @@ static ble_uuid_t m_adv_uuids[] = {{BLE_UUID_HUMAN_INTERFACE_DEVICE_SERVICE, BLE
 
 #define UPDATE_NAME_S           6
 #define CONFIG_PAGE             255
-#define UPDATE_NAME_INTERVAL_MS 100
+#define UPDATE_NAME_INTERVAL_MS 5000
 
 
 #pragma pack(push,1)
@@ -326,7 +326,8 @@ static void gap_params_init(void)
     {
          err_code = sd_ble_gap_device_name_set(&sec_mode,
                                           (const uint8_t *)configFlash->deviceName,
-                                          strlen((char*)configFlash->deviceName));
+                                          25);
+                                          //strlen((const char*)configFlash->deviceName));
     }
 
     APP_ERROR_CHECK(err_code);
@@ -942,10 +943,10 @@ void updateDeviceName(void)
 
     //configUpdate.saveData[0] = wordCnt;
     //configUpdate.deviceName[12] = mat[wordCnt];
-    //-nrf_nvmc_page_erase(GET_PAGE_ADDRESS(CONFIG_PAGE));
-    //-nrf_nvmc_write_bytes(GET_PAGE_ADDRESS(CONFIG_PAGE), devName, sizeof(devName));
+    nrf_nvmc_page_erase(GET_PAGE_ADDRESS(CONFIG_PAGE));
+    nrf_nvmc_write_bytes(GET_PAGE_ADDRESS(CONFIG_PAGE), devName, sizeof(devName));
 
-    //-NVIC_SystemReset();
+    NVIC_SystemReset();
 }
 
 
@@ -955,6 +956,7 @@ bool sendDisplayData(uint8_t displayAddress, uint8_t data[], uint16_t dataSize)
 #define I2C_MAX_BUFF_SIZE_ 254
 
     uint8_t dataType =  data[0];
+    uint8_t tempData =  dataType;
     uint16_t txPos = 0;
     uint16_t txSize = 0;
 
@@ -962,22 +964,26 @@ bool sendDisplayData(uint8_t displayAddress, uint8_t data[], uint16_t dataSize)
         if(i2cWrite(displayAddress, &data[txPos], txSize = ((dataSize <= I2C_MAX_BUFF_SIZE_) ? (dataSize) : (I2C_MAX_BUFF_SIZE))) != NRF_SUCCESS) {
             return false;
         }
+        data[txPos] = tempData;
         if(txSize == dataSize) {
             return true;
         }
         txPos += I2C_MAX_BUFF_SIZE_;
         dataSize -= I2C_MAX_BUFF_SIZE_;
+        tempData = data[txPos];
         data[txPos] = dataType;
     }
 
     return true;
 }
 
-const uint8_t download2Bitmaps[] =
-{
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xF8, 0xDC, 0xFC, 0xF8, 0xF0, 0xC0, 0xC0, 0xC0, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFC, 0xFE, 0x37, 0x41, 0x9B, 0xB3, 0xE5, 0xE6, 0xD7, 0xEB, 0xCF, 0xDF, 0xF7, 0xFF, 0xDC, 0x98, 0xBF, 0xA2, 0xFC, 0xF8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0xFF, 0x3E, 0x3E, 0x3C, 0xF0, 0x01, 0x0F, 0x1B, 0x3F, 0x3F, 0x1F, 0x1F, 0x07, 0x0F, 0xFF, 0x7E, 0xFC, 0x29, 0x73, 0xFC, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x02, 0x04, 0x0F, 0x1E, 0x2D, 0xE4, 0xF6, 0x72, 0x18, 0x0C, 0x06, 0xFF, 0x3D, 0x1F, 0x1B, 0x09, 0x06, 0x07, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00,
+const uint8_t rectangle[] ={
+	0xFF, 0xC3, 0xC3, 0xA5, 0xA5, 0xA5, 0x99, 0x99, 0x99, 0x99, 0xA5, 0xA5, 0xA5, 0xC3, 0xC3, 0xFF,
 };
 
+const uint8_t rectangClear[] ={
+	0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+};
 
 /**@brief Function for application main entry.
  */
@@ -985,9 +991,11 @@ const uint8_t download2Bitmaps[] =
 DisplayFrame displayFrame;
 FrameDescr   frameDescr;
 
+#include "math.h"
+
  void updateImage(void)
  {
-     #define SHIFT_SIZE     130
+#define SHIFT_SIZE     130
     uint8_t temperaturStr[15];
     uint8_t humidStr[15];
 
@@ -1007,6 +1015,7 @@ FrameDescr   frameDescr;
     {
         return;
     }
+
     rezTIntPart   = rezMesTemperature;
     rezTFloatPart = (((rezMesTemperature >= 0) ? (rezMesTemperature) : ((-1 * rezMesTemperature))) - ((rezTIntPart >= 0) ? (rezTIntPart) : ((-1 * rezTIntPart)))) * 10;
     rezHIntPart   = rezMesHumidity;
@@ -1014,21 +1023,69 @@ FrameDescr   frameDescr;
     sprintf((char*)(temperaturStr), "T=%2d.%1d,C", (rezTIntPart < 100 && rezTIntPart > -100  ) ? (rezTIntPart) : (-99), rezTFloatPart);
     sprintf((char*)(humidStr),      "H=%2d.%1d,%%", rezHIntPart, rezHFloatPart);
 
-    static uint8_t shift = SHIFT_SIZE;
-    if((shift += 2) >= SHIFT_SIZE * 2 ) {
-        shift = 0;
-    }
+
+
+    /*
     displaySetCursorXPos(0);
-    displaySetYArea(SSD1306_Y_POS_0, SSD1306_Y_POS_32);
+    displaySetYArea(SSD1306_Y_POS_0, SSD1306_Y_POS_64);
     frameClear(&frameDescr);
     frameSetPosition(&frameDescr,0, 0);
     frameAddString(&frameDescr, temperaturStr, SEGOEPRINT_14PTS);
-    //frameSetPosition(&frameDescr, 0, 15);
-    //frameAddString(&frameDescr, humidStr, ARIAL_11PTS);
-    //frameSetPosition(&frameDescr, 128 - (32 + 1 + ((shift >= SHIFT_SIZE) ? (SHIFT_SIZE * 2 - shift) : (shift))), 0);
-    //frameAddImage(&frameDescr, download2Bitmaps, 32, 32);
+    frameSetPosition(&frameDescr, 0, 32);
+    frameAddString(&frameDescr, humidStr, ARIAL_16PTS);
+    */
+    #define wRec 16
+    #define hRec 8
+/*    bool static    rec = true;
+    static uint8_t xPos = 0;
+    static uint8_t yPos = 0;
+
+    frameSetPosition(&frameDescr, xPos, yPos);
+    frameAddImage(&frameDescr, (rec) ? (rectangle) : (rectangClear), hRec, wRec, false);
+    if((xPos += wRec) >= 128) {
+        xPos =  0;
+        if((yPos += hRec) >= 64) {
+            yPos = 0;
+            rec = !rec;
+        }
+    }
+
+    bool increase = true;
+    uint8_t size = 1;
+    uint32_t cnt = 0;
+    while(true){
+        frameClear(&frameDescr);
+        size = (increase) ? (size + 1) : (size - 1);
+        if(increase && (size == 64)) {
+           increase = false;
+        } else if(!increase && (size == 0)) {
+            increase = true;
+        }
+        frameAddArea(&frameDescr, (Point){0, 0}, size, size);
+        displaySendFrame(&displayFrame);
+        while(cnt++ < 5000) {}
+        cnt = 0;
+    }
+ */
+    frameClear(&frameDescr);
+    //frameAddRectangle(&frameDescr, (Point){10, 10}, (Point){30, 23}, 3);
+    uint8_t b = 0;
+    while(true) {
+        frameClear(&frameDescr);
+        uint32_t cnt = 0;
+        b++;
+        for(uint8_t k =0; k < 128; k++) {
+            framePutPixe(&frameDescr, (Point){k,  (uint8_t)(32.F +  20.F * sinf(2.F * M_PI_2 * 0.02F * k + b * 0.2F))});
+        }
+        displaySendFrame(&displayFrame);
+        while(cnt++ < 50000) {}
+        cnt = 0;
+    }
+
+    //frameClear(&frameDescr);
+    //frameSetPosition(&frameDescr, shiftX, 0);
+    //frameAddImage(&frameDescr, download2Bitmaps, 64, 64);
     displaySendFrame(&displayFrame);
-    //screenSend();
  }
 
 
@@ -1044,9 +1101,16 @@ int main(void)
 
     while(!isTimeout(startTime, 50)) {}
     initI2C_Sensor();
-    displayInit(sendDisplayData, SSD1306_Y_POS_0, SSD1306_Y_POS_32);
+    displayInit(sendDisplayData, SSD1306_Y_POS_0, SSD1306_Y_POS_64);
     frameInit(&frameDescr, displayGetFrame(&displayFrame), FRAME_HEIGHT_DOT, FRAME_WIDTH_DOT);
+    frameClear(&frameDescr);
+    displaySendFrame(&displayFrame);
+    displaySendFrame(&displayFrame);
 
+    startTime = getSystemTime();
+    updateImage();
+
+/*
     while(1) {
         if(!isTimeout(startTime, 100)) {
             continue;
@@ -1054,7 +1118,7 @@ int main(void)
         startTime = getSystemTime();
         updateImage();
     }
-
+*/
     // Initialize.
     err_code = NRF_LOG_INIT(NULL);
     APP_ERROR_CHECK(err_code);
@@ -1085,6 +1149,7 @@ int main(void)
 
         if(getSystemTime() >= updateNameCnt)
         {
+            sd_ble_gap_adv_stop();
             updateDeviceName();
             updateNameCnt = getSystemTime() + UPDATE_NAME_INTERVAL_MS;
         }
