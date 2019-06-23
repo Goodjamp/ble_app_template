@@ -1013,7 +1013,7 @@ FrameDescr   frameDescr;
                                                                           &rezMesPressure,
 					                                                      &rezMesHumidity)))
     {
-        return;
+        //return;
     }
 
     rezTIntPart   = rezMesTemperature;
@@ -1069,13 +1069,35 @@ FrameDescr   frameDescr;
  */
     frameClear(&frameDescr);
     //frameAddRectangle(&frameDescr, (Point){10, 10}, (Point){30, 23}, 3);
-    uint8_t b = 0;
+    int32_t b = 0;
+    uint8_t sin;
+    uint8_t rezaCal[11 + 30];
     while(true) {
-        frameClear(&frameDescr);
         uint32_t cnt = 0;
         b++;
+        sin = (uint8_t)(32.F +  15.F * sinf(2.F * M_PI_2 * 0.02F * 0.F + b * 0.2F));
+        sprintf((char*)rezaCal, "sin( %d ) = %d", (int)b, sin);
+
+        if(BME280_STATUS_OK  != (bmeStatus = BME280_forcedMes(&sensorHandler, &rezMesTemperature,
+                                                                          &rezMesPressure,
+					                                                      &rezMesHumidity)))
+        {
+            //continue;
+        }
+        rezTIntPart   = rezMesTemperature;
+        rezTFloatPart = (((rezMesTemperature >= 0) ? (rezMesTemperature) : ((-1 * rezMesTemperature))) - ((rezTIntPart >= 0) ? (rezTIntPart) : ((-1 * rezTIntPart)))) * 10;
+        sprintf((char*)(temperaturStr), "T=%2d.%1d,C", (rezTIntPart < 100 && rezTIntPart > -100  ) ? (rezTIntPart) : (-99), rezTFloatPart);
+
+
+
+        frameClear(&frameDescr);
+        frameSetPosition(&frameDescr,0, 0);
+        frameAddString(&frameDescr, rezaCal, ARIAL_8PTS, true);
+        frameSetPosition(&frameDescr,0, 50);
+        frameAddString(&frameDescr, temperaturStr, ARIAL_8PTS, true);
+
         for(uint8_t k =0; k < 128; k++) {
-            framePutPixe(&frameDescr, (Point){k,  (uint8_t)(32.F +  20.F * sinf(2.F * M_PI_2 * 0.02F * k + b * 0.2F))});
+            framePutPixe(&frameDescr, (Point){k, (uint8_t)(32.F +  15.F * sinf(2.F * M_PI_2 * 0.02F * k + b * 0.2F))});
         }
         displaySendFrame(&displayFrame);
         while(cnt++ < 50000) {}
@@ -1103,9 +1125,6 @@ int main(void)
     initI2C_Sensor();
     displayInit(sendDisplayData, SSD1306_Y_POS_0, SSD1306_Y_POS_64);
     frameInit(&frameDescr, displayGetFrame(&displayFrame), FRAME_HEIGHT_DOT, FRAME_WIDTH_DOT);
-    frameClear(&frameDescr);
-    displaySendFrame(&displayFrame);
-    displaySendFrame(&displayFrame);
 
     startTime = getSystemTime();
     updateImage();
